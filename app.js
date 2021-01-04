@@ -1,9 +1,8 @@
-// Book Class : Represents a Book
 class Book {
   constructor(title, author, isbn) {
-    this.title = title;
     this.author = author;
     this.isbn = isbn;
+    this.title = title;
   }
 }
 
@@ -13,7 +12,7 @@ class UI {
   static displayBooks() {
     const books = Store.getBooks();
 
-    books.forEach((book) => UI.addBookToList(book));
+    books.forEach(UI.addBookToList);
   }
 
   static addBookToList(book) {
@@ -56,15 +55,9 @@ class UI {
     document.querySelector("#isbn").value = "";
   }
 
-  static controlIsbn(book) {
-    let checkIsbn = true;
-    let books = Store.getBooks();
-    for(let i of books){
-      if(i.isbn === book.isbn){
-        checkIsbn = false;
-      }
-    }
-    return checkIsbn;
+  static checkIfBookExists(book) {
+    const books = Store.getBooks();
+    return !books.some((storedBook) => storedBook.isbn === book.isbn);
   }
 }
 
@@ -72,13 +65,11 @@ class UI {
 
 class Store {
   static getBooks() {
-    let books;
     if (localStorage.getItem("books") === null) {
-      books = [];
+      return [];
     } else {
-      books = JSON.parse(localStorage.getItem("books"));
+      return JSON.parse(localStorage.getItem("books"));
     }
-    return books;
   }
 
   static addBook(book) {
@@ -88,12 +79,7 @@ class Store {
   }
 
   static removeBook(isbn) {
-    const books = Store.getBooks();
-    books.forEach((book, index) => {
-      if (book.isbn === isbn) {
-        books.splice(index, 1);
-      }
-    });
+    const books = Store.getBooks().filter((book) => book.isbn != isbn);
     localStorage.setItem("books", JSON.stringify(books));
   }
 }
@@ -114,7 +100,7 @@ document.querySelector("#book-form").addEventListener("submit", (e) => {
   } else {
     // Instantiate book
     const book = new Book(title, author, isbn);
-    const uniqueIsbn = UI.controlIsbn(book);
+    const uniqueIsbn = UI.checkIfBookExists(book);
 
     if (uniqueIsbn) {
       // Add Book to UI
@@ -125,10 +111,9 @@ document.querySelector("#book-form").addEventListener("submit", (e) => {
       // Clear fields
 
       UI.clearFields();
-    }else{
-      UI.showAlert('Please type an unique isbn','warning');
+    } else {
+      UI.showAlert("Please type an unique isbn", "warning");
     }
-    
   }
 });
 // Event : Remove a Book
