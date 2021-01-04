@@ -10,15 +10,11 @@ class Book {
 // UI Class : Handle UI Tasks
 
 class UI {
+  static displayBooks() {
+    const books = Store.getBooks();
 
-    static displayBooks(){
-        const books = Store.getBooks();
-
-        books.forEach(book => UI.addBookToList(book))
-    }
-
-
-
+    books.forEach((book) => UI.addBookToList(book));
+  }
 
   static addBookToList(book) {
     const list = document.querySelector("#book-list");
@@ -33,7 +29,6 @@ class UI {
       `;
 
     list.appendChild(row);
-    
   }
 
   static showAlert(message, className) {
@@ -52,13 +47,24 @@ class UI {
     if (el.classList.contains("delete")) {
       el.parentElement.parentElement.remove();
     }
-    UI.showAlert("Removed", 'danger');
+    UI.showAlert("Removed", "danger");
   }
 
   static clearFields() {
     document.querySelector("#title").value = "";
     document.querySelector("#author").value = "";
     document.querySelector("#isbn").value = "";
+  }
+
+  static controlIsbn(book) {
+    let checkIsbn = true;
+    let books = Store.getBooks();
+    for(let i of books){
+      if(i.isbn === book.isbn){
+        checkIsbn = false;
+      }
+    }
+    return checkIsbn;
   }
 }
 
@@ -108,23 +114,28 @@ document.querySelector("#book-form").addEventListener("submit", (e) => {
   } else {
     // Instantiate book
     const book = new Book(title, author, isbn);
+    const uniqueIsbn = UI.controlIsbn(book);
 
-    // Add Book to UI
-    UI.addBookToList(book);
-    UI.showAlert("Succesfully book added", "success");
-    // Add book to store
-    Store.addBook(book);
-    // Clear fields
+    if (uniqueIsbn) {
+      // Add Book to UI
+      UI.addBookToList(book);
+      UI.showAlert("Succesfully book added", "success");
+      // Add book to store
+      Store.addBook(book);
+      // Clear fields
 
-    UI.clearFields();
+      UI.clearFields();
+    }else{
+      UI.showAlert('Please type an unique isbn','warning');
+    }
+    
   }
 });
 // Event : Remove a Book
 document.querySelector("#book-list").addEventListener("click", (e) => {
-// Remove book from UI
+  // Remove book from UI
   UI.deleteBook(e.target);
   // Remove book from Store
-  
+
   Store.removeBook(e.target.parentElement.previousElementSibling.textContent);
-  
 });
